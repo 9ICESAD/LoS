@@ -1,45 +1,56 @@
---[[  
-🔥 Modified by 9ICE 🐒🔥
-Fix version - Speed, Jump, Auto Orbs + Anti-AFK
-]]
+-- GUI By 9ICE 🐒🔥 - Fix UI หาย
 
+-- รอ PlayerGui ชัวร์ๆ
 local player = game.Players.LocalPlayer
+local gui = player:WaitForChild("PlayerGui")
 
--- รอให้ Character เกิดก่อน
-if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-    player.CharacterAdded:Wait()
-end
+-- UI ที่ไม่หายตอนรีเซ็ต
+local screen = Instance.new("ScreenGui")
+screen.Name = "LoS_GUI_By_9ICE"
+screen.ResetOnSpawn = false -- 💥 จุดสำคัญ
+screen.Parent = gui
 
-local char = player.Character
-local hrp = char:WaitForChild("HumanoidRootPart")
-local hum = char:WaitForChild("Humanoid")
+-- Frame เท่ๆ
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 250)
+frame.Position = UDim2.new(0, 20, 0.5, -125)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.BorderSizePixel = 2
+frame.Parent = screen
 
--- Speed & Jump
-hum.WalkSpeed = 100
-hum.JumpPower = 100
+-- ปุ่มเปิด/ปิด Auto Orbs
+local autoBtn = Instance.new("TextButton")
+autoBtn.Size = UDim2.new(0, 180, 0, 50)
+autoBtn.Position = UDim2.new(0, 10, 0, 20)
+autoBtn.Text = "🔄 Toggle Auto Orbs"
+autoBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+autoBtn.TextColor3 = Color3.new(1, 1, 1)
+autoBtn.Parent = frame
 
--- Auto Collect Orbs / Rings / Gems
-spawn(function()
-    while wait(0.5) do
-        pcall(function()
+-- ฟังก์ชัน Auto Touch
+local running = false
+local loop
+
+autoBtn.MouseButton1Click:Connect(function()
+    running = not running
+    autoBtn.Text = running and "✅ Auto Orbs: ON" or "🔄 Auto Orbs: OFF"
+    if running then
+        loop = game:GetService("RunService").RenderStepped:Connect(function()
             for _, v in pairs(workspace:GetDescendants()) do
                 if v:IsA("TouchTransmitter") then
                     local part = v.Parent
                     if part and part:IsA("BasePart") then
-                        firetouchinterest(hrp, part, 0)
-                        firetouchinterest(hrp, part, 1)
+                        pcall(function()
+                            firetouchinterest(player.Character.HumanoidRootPart, part, 0)
+                            firetouchinterest(player.Character.HumanoidRootPart, part, 1)
+                        end)
                     end
                 end
             end
         end)
+    else
+        if loop then loop:Disconnect() end
     end
 end)
 
--- Anti-AFK
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-    wait(1)
-    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-end)
-
-print("✅ Script Fixed & Loaded - By 9ICE 🔥")
+print("✅ UI Loaded - ลิงปั่นไฟ by 9ICE 🐒🔥")
